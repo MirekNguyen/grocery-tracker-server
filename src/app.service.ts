@@ -3,14 +3,27 @@ import OpenAI from 'openai';
 import { zodTextFormat } from "openai/helpers/zod";
 import z from 'zod/v3';
 
-const ImageAnalyze = z.object({
+const ReceiptItem = z.object({
   name: z.string(),
-  calories: z.number(),
-  protein: z.number(),
-  description: z.string(),
+  price: z.number(),
+  quantity: z.number().optional().nullable(),
+  unit: z.string().optional().nullable(),
+  lineTotal: z.number().optional().nullable(),
+  description: z.string().optional().nullable(),
+  category: z.enum([
+    'bakery', 'dairy', 'beverage', 'meat', 'produce', 'snack', 'household', 'other'
+  ]),
 });
 
-export type GroceryItem = z.infer<typeof ImageAnalyze>
+const ReceiptSchema = z.object({
+  date: z.string(),
+  total: z.number(),
+  currency: z.string(),
+  storeName: z.string().optional().nullable(),
+  items: z.array(ReceiptItem),
+});
+
+export type ReceiptType = z.infer<typeof ReceiptSchema>;
 
 @Injectable()
 export class AppService {
@@ -18,7 +31,7 @@ export class AppService {
   constructor() {
     this.openAi = new OpenAI();
   }
-  async getHello(file: Express.Multer.File): Promise<GroceryItem | null> {
+  async getHello(file: Express.Multer.File): Promise<ReceiptType | null> {
     const mimeType = file.mimetype;
     const base64Image = file.buffer.toString('base64');
     const response = await this.openAi.responses.parse({
@@ -26,12 +39,12 @@ export class AppService {
       input: [
         {
           role: 'system',
-          content: 'Return only valid JSON that matches the schema.',
+          content: 'You are a receipt analyzer for Czech supermarket receipts. Return only valid JSON that matches the schema.',
         },
         {
           role: 'user',
           content: [
-            { type: 'input_text', text: "what's in this image?" },
+            { type: 'input_text', text: "Analyze this receipt and extract as much data as possible, using all fields in the schema." },
             {
               type: 'input_image',
               image_url: `data:${mimeType};base64,${base64Image}`,
@@ -41,7 +54,7 @@ export class AppService {
         },
       ],
       text: {
-        format: zodTextFormat(ImageAnalyze, 'food_analysis'),
+        format: zodTextFormat(ReceiptSchema, 'receipt_analysis'),
       },
     });
     return response.output_parsed;
