@@ -35,7 +35,7 @@ export class AppService {
     const mimeType = file.mimetype;
     const base64Image = file.buffer.toString('base64');
     const response = await this.openAi.responses.parse({
-      model: 'gpt-5-nano',
+      model: 'gpt-4.1-nano',
       input: [
         {
           role: 'system',
