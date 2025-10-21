@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { DatabaseService } from './database.service';
+import { DrizzleProvider } from './drizzle.provider';
 
 @Module({
   imports: [ConfigModule.forRoot()],
-  providers: [DatabaseService]
+  providers: [...DrizzleProvider],
+  exports: [...DrizzleProvider],
 })
 export class DatabaseModule {}

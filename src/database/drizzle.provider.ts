@@ -4,10 +4,11 @@ import postgres from 'postgres';
 import { schema } from './drizzle.schema';
 import { EnvSchema } from './env.resolver';
 
-export const DRIZZLE_ASYNC_PROVIDER = Symbol('DRIZZLE_PROVIDER');
+export const DRIZZLE_PROVIDER = Symbol('DRIZZLE_PROVIDER');
+export type DrizzleDatabase = PostgresJsDatabase<typeof schema>;
 export const DrizzleProvider = [
   {
-    provide: DRIZZLE_ASYNC_PROVIDER,
+    provide: DRIZZLE_PROVIDER,
     inject: [ConfigService],
     useFactory: (): PostgresJsDatabase<typeof schema> => {
       const env = EnvSchema.parse(process.env);
@@ -16,6 +17,6 @@ export const DrizzleProvider = [
         schema: schema,
       });
     },
-    exports: DRIZZLE_ASYNC_PROVIDER,
+    exports: DRIZZLE_PROVIDER,
   },
 ];

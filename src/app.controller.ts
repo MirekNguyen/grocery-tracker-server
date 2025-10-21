@@ -1,28 +1,32 @@
+import { FileInterceptor } from '@nest-lab/fastify-multer';
 import {
   Controller,
   Get,
+  Inject,
   Post,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { AppService, ReceiptType } from './app.service';
-import { FileInterceptor } from '@nest-lab/fastify-multer';
+import { DRIZZLE_PROVIDER, type DrizzleDatabase } from './database/drizzle.provider';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    @Inject(DRIZZLE_PROVIDER) private readonly db: DrizzleDatabase,
+    private readonly appService: AppService,
+  ) {}
 
   @Get('groceries')
   getTest() {
-    return [
-      { id: 1, name: 'Apples', type: 'Fruit', price: 25.5, quantiy: 3 },
-      { id: 2, name: 'Milk', type: 'Dairy', price: 12.8, quantiy: 1 },
-    ];
+    return this.db.query.receipt.findMany();
   }
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadImage(@UploadedFile() file: Express.Multer.File): Promise<ReceiptType | null> {
+  async uploadImage(
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<ReceiptType | null> {
     return await this.appService.getHello(file);
   }
 }
