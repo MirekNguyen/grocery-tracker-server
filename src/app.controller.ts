@@ -15,19 +15,23 @@ import {
 import { receipt } from './database/schema/receipt.schema';
 import { receiptItem } from './database/schema/receipt-item.schema';
 
-@Controller()
+@Controller('receipts')
 export class AppController {
   constructor(
     @Inject(DRIZZLE_PROVIDER) private readonly db: DrizzleDatabase,
     private readonly appService: AppService,
   ) {}
 
-  @Get('groceries')
+  @Get()
   getTest() {
-    return this.db.query.receipt.findMany();
+    return this.db.query.receipt.findMany({
+      with: {
+        receiptItem: true
+      }
+    });
   }
 
-  @Post('upload')
+  @Post('analyze')
   @UseInterceptors(FileInterceptor('file'))
   async uploadImage(
     @UploadedFile() file: Express.Multer.File,
