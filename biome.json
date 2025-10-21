@@ -50,7 +50,11 @@
 				"useIsNan": "error",
 				"useValidForDirection": "error",
 				"useValidTypeof": "error",
-				"useYield": "error"
+				"useYield": "error",
+        "noUnusedImports": {
+          "level": "error",
+          "fix": "safe"
+        }
 			},
 			"style": {
 				"noCommonJs": "error",
@@ -110,6 +114,9 @@
 			"attributePosition": "auto",
 			"bracketSpacing": true
 		},
+		"parser": {
+		  "unsafeParameterDecoratorsEnabled": true
+    },
 		"globals": ["exports"]
 	},
 	"html": { "formatter": { "selfCloseVoidElements": "always" } },
