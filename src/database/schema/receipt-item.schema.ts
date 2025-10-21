@@ -9,6 +9,7 @@ import {
   timestamp,
   varchar,
 } from 'drizzle-orm/pg-core';
+import { createSelectSchema } from 'drizzle-zod';
 import { receipt } from './receipt.schema';
 
 export const receiptCategory = pgEnum('receipt_category', [
@@ -24,7 +25,9 @@ export const receiptCategory = pgEnum('receipt_category', [
 
 export const receiptItem = pgTable('receipt_item', {
   id: serial().primaryKey(),
-  receiptId: integer('receipt_id').references(() => receipt.id),
+  receiptId: integer('receipt_id').references(() => receipt.id, {
+    onDelete: 'cascade',
+  }),
   date: timestamp('date').defaultNow().notNull(),
   name: varchar('name').notNull(),
   description: text('description'),
@@ -41,3 +44,5 @@ export const receiptItemRelation = relations(receiptItem, ({ one }) => ({
     references: [receipt.id],
   }),
 }));
+
+export const receiptItemSchema = createSelectSchema(receiptItem);

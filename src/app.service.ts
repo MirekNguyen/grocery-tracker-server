@@ -1,29 +1,40 @@
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
-import { zodTextFormat } from "openai/helpers/zod";
+import { zodTextFormat } from 'openai/helpers/zod';
 import z from 'zod/v3';
 
 const ReceiptItem = z.object({
   name: z.string(),
   price: z.number(),
-  quantity: z.number().optional().nullable(),
+  quantity: z.number(),
   unit: z.string().optional().nullable(),
-  lineTotal: z.number().optional().nullable(),
-  description: z.string().optional().nullable(),
+  priceTotal: z.number(),
+  description: z.string(),
   category: z.enum([
-    'bakery', 'dairy', 'beverage', 'meat', 'produce', 'snack', 'household', 'other'
+    'bakery',
+    'dairy',
+    'beverage',
+    'meat',
+    'produce',
+    'snack',
+    'household',
+    'other',
   ]),
 });
 
-const ReceiptSchema = z.object({
-  date: z.string(),
+// const ReceiptItem = receiptItemSchema;
+
+const Receipt = z.object({
+  date: z.string().datetime(),
   total: z.number(),
   currency: z.string(),
   storeName: z.string().optional().nullable(),
   items: z.array(ReceiptItem),
 });
 
-export type ReceiptType = z.infer<typeof ReceiptSchema>;
+// const Receipt = receiptSchema;
+
+export type ReceiptType = z.infer<typeof Receipt>;
 
 @Injectable()
 export class AppService {
@@ -39,12 +50,16 @@ export class AppService {
       input: [
         {
           role: 'system',
-          content: 'You are a receipt analyzer for Czech supermarket receipts. Return only valid JSON that matches the schema.',
+          content:
+            'You are a receipt analyzer for Czech supermarket receipts. Return only valid JSON that matches the schema.',
         },
         {
           role: 'user',
           content: [
-            { type: 'input_text', text: "Analyze this receipt and extract as much data as possible, using all fields in the schema." },
+            {
+              type: 'input_text',
+              text: 'Analyze this receipt and extract as much data as possible, using all fields in the schema.',
+            },
             {
               type: 'input_image',
               image_url: `data:${mimeType};base64,${base64Image}`,
@@ -54,7 +69,7 @@ export class AppService {
         },
       ],
       text: {
-        format: zodTextFormat(ReceiptSchema, 'receipt_analysis'),
+        format: zodTextFormat(Receipt, 'receipt_analysis'),
       },
     });
     return response.output_parsed;
